@@ -1,3 +1,19 @@
+/**
+ * @module inventory
+ * @description Collects a comprehensive snapshot of the agent's environment for SIEM telemetry.
+ *
+ * The inventory snapshot captures:
+ * - OpenClaw configuration (channels, plugins, skills, gateway settings)
+ * - Runtime state via CLI commands (`openclaw skills list`, `openclaw plugins list`, `openclaw gateway call channels.status`)
+ * - File system discovery of workspace and managed skills
+ * - Agent identity metadata (hostname, OS, node version)
+ *
+ * Snapshots are emitted on startup and periodically (every 10 minutes).
+ * Periodic snapshots are deduplicated by a SHA256 signature — only changes are sent.
+ *
+ * Sensitive fields (API tokens, passwords) are detected but NOT included in the snapshot;
+ * only a boolean `credentialsPresent` flag is set.
+ */
 import crypto from "node:crypto";
 import os from "node:os";
 import path from "node:path";
@@ -552,6 +568,16 @@ function buildCapabilities(snapshot: AgentInventorySnapshot): string[] {
   return [...capabilities].sort((a, b) => a.localeCompare(b));
 }
 
+/**
+ * Collect a full agent environment snapshot for SIEM telemetry.
+ * Reads the OpenClaw config file, discovers skills on disk, and queries
+ * the running gateway for runtime state. Returns a snapshot + SHA256 signature
+ * for deduplication.
+ * @param params.cfg - Plugin configuration (for project/agent metadata)
+ * @param params.reason - "startup" for initial snapshot, "periodic" for recurring
+ * @param params.runtimeIdentity - Agent identity metadata (hostname, versions)
+ * @returns Snapshot object and its SHA256 signature for change detection
+ */
 export async function collectAgentInventorySnapshot(params: {
   cfg: ClawdstrikePluginConfig;
   reason: "startup" | "periodic";

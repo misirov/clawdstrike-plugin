@@ -1,4 +1,23 @@
 #!/usr/bin/env node
+/**
+ * @module clawdstrike-cli
+ * @description CLI installer for the ClawdStrike OpenClaw plugin.
+ *
+ * Usage:
+ *   npx clawdstrike install --mode local [--link]
+ *   npx clawdstrike install --platform-url <url> --token <token> --mode enforce [--link]
+ *
+ * This script orchestrates the OpenClaw CLI to:
+ * 1. Install the plugin package (`openclaw plugins install`)
+ * 2. Enable the plugin (`openclaw plugins enable clawdstrike`)
+ * 3. Set configuration values (mode, platformUrl, apiToken, localRulesPath, etc.)
+ *
+ * For local mode, it creates the rules directory but does NOT write default rules —
+ * that is handled by LocalRuleStore.loadRules() on first gateway start, which creates
+ * rules.json with the full 46 default rules and 11 prompt directives.
+ *
+ * No dependencies — uses only Node.js built-in modules.
+ */
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";

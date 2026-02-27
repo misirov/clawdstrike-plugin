@@ -1,3 +1,24 @@
+/**
+ * @module index
+ * @description ClawdStrike plugin entry point — registers all hooks, commands, and the service.
+ *
+ * This is the main file loaded by OpenClaw's plugin system. It:
+ *
+ * 1. **Registers the service** ({@link createClawdstrikeService}) which manages the runtime lifecycle.
+ * 2. **Instantiates the approval manager** for human-in-the-loop confirm rules.
+ * 3. **Wires 20+ hook handlers** to OpenClaw's event system:
+ *    - `before_tool_call` — policy evaluation, approval flow, intent action check
+ *    - `message_sending` — outbound message policy + deterministic output enforcement
+ *    - `tool_result_persist`, `message_received`, `message_sent` — telemetry
+ *    - `llm_input`, `llm_output` — intent baseline tracking
+ *    - `before_agent_start`, `before_prompt_build` — security directive injection
+ *    - Session/gateway lifecycle hooks — tracing and telemetry
+ * 4. **Registers the /cs command** for interactive rule management via chat.
+ * 5. **Manages distributed trace context** across sessions, runs, and tool calls.
+ *
+ * All hook handlers follow the pattern: get runtime → emit telemetry → evaluate policy → return decision.
+ * If the runtime is null (plugin disabled or not yet started), hooks return immediately (no-op).
+ */
 import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
 import crypto from "node:crypto";
 import { emptyPluginConfigSchema } from "openclaw/plugin-sdk";

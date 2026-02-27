@@ -1,7 +1,26 @@
+/**
+ * @module rule-store
+ * @description Persistent storage for local security rules and prompt directives.
+ *
+ * Manages a JSON file on disk (`rules.json`) containing:
+ * - An array of {@link LocalRule} entries (block, allow, warn, confirm, modify)
+ * - An array of free-text prompt directives injected into the LLM system prompt
+ *
+ * All mutations (add/remove rule or directive) persist to disk immediately.
+ * On first run (file missing), initializes with defaults from {@link default-rules}.
+ * On corrupted file, re-initializes with defaults.
+ *
+ * Rules are evaluated by the policy engine ({@link policy-engine}) in priority order
+ * (lower number = higher priority). IDs are stable and auto-incremented.
+ */
 import fs from "node:fs";
 import path from "node:path";
 import { DEFAULT_RULES, DEFAULT_PROMPT_DIRECTIVES } from "./default-rules.js";
 
+/**
+ * A single security rule. Rules are matched against tool calls or messages
+ * by the policy engine based on scope (domain/ip/tool/message/output).
+ */
 export type LocalRule = {
   id: number;
   scope: "domain" | "ip" | "tool" | "message" | "output";
@@ -37,6 +56,11 @@ function isValidRule(rule: unknown): rule is LocalRule {
   return true;
 }
 
+/**
+ * CRUD store for local rules and prompt directives.
+ * Reads from and writes to a JSON file. Thread-safe for single-process use.
+ * Exposed to the /cs command handler and the policy engine.
+ */
 export class LocalRuleStore {
   private filePath: string;
   private rules: LocalRule[] = [];

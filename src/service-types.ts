@@ -1,3 +1,18 @@
+/**
+ * @module service-types
+ * @description Core TypeScript type definitions for the ClawdStrike plugin.
+ *
+ * Defines the shared contracts used across all modules:
+ * - {@link ClawdstrikePluginConfig} — resolved plugin configuration
+ * - {@link TelemetryEnvelope} — schema for all telemetry events sent to the SIEM
+ * - {@link ToolDecision} / {@link MessageDecision} / {@link IntentDecision} — policy decision types
+ * - {@link ClawdstrikeRuntime} — the unified runtime interface produced by all modes
+ *
+ * These types are the API boundary between the plugin entry (index.ts), the service
+ * layer (service.ts), the local policy engine, and the platform client.
+ */
+
+/** Operating mode. "off" disables entirely, "audit" logs only, "enforce" blocks, "local" uses on-disk rules. */
 export type ClawdstrikeMode = "off" | "audit" | "enforce" | "local";
 
 export type ClawdstrikeCaptureConfig = {
@@ -92,6 +107,7 @@ export type TelemetryEnvelope = {
   };
 };
 
+/** Request payload sent to the policy engine for a tool call decision. */
 export type ToolDecisionRequest = {
   projectId?: string;
   agentInstanceId?: string;
@@ -108,6 +124,14 @@ export type ToolDecisionRequest = {
   parentSpanId?: string;
 };
 
+/**
+ * Policy decision returned by the tool call guardrail.
+ * - "allow" — tool executes normally
+ * - "warn" — logged, tool executes (audit behavior)
+ * - "block" — tool prevented, reason returned to LLM
+ * - "modify" — tool params altered before execution (platform mode)
+ * - "confirm" — tool blocked pending user approval via /cs approve (local mode)
+ */
 export type ToolDecision =
   | { action: "allow"; decisionId?: string; ruleId?: string }
   | { action: "warn"; reason?: string; decisionId?: string; ruleId?: string }
@@ -115,6 +139,7 @@ export type ToolDecision =
   | { action: "modify"; params: Record<string, unknown>; reason?: string; decisionId?: string; ruleId?: string }
   | { action: "confirm"; reason?: string; decisionId?: string; ruleId?: string };
 
+/** Request payload sent to the policy engine for an outbound message decision. */
 export type MessageDecisionRequest = {
   projectId?: string;
   agentInstanceId?: string;
@@ -129,12 +154,14 @@ export type MessageDecisionRequest = {
   requestId?: string;
 };
 
+/** Policy decision returned by the outbound message guardrail. */
 export type MessageDecision =
   | { action: "allow"; decisionId?: string; ruleId?: string }
   | { action: "warn"; reason?: string; decisionId?: string; ruleId?: string }
   | { action: "block"; reason?: string; decisionId?: string; ruleId?: string }
   | { action: "modify"; content: string; reason?: string; decisionId?: string; ruleId?: string };
 
+/** Request payload for evaluating an incoming user message (platform mode only). */
 export type InboundMessageDecisionRequest = {
   projectId?: string;
   agentInstanceId?: string;
@@ -149,6 +176,7 @@ export type InboundMessageDecisionRequest = {
   sessionKey?: string;
 };
 
+/** Decision returned for an inbound user message. "hard" enforcement blocks the message; "advisory" logs only. */
 export type InboundMessageDecision = {
   action: "allow" | "block";
   enforcement?: "advisory" | "hard";
@@ -160,6 +188,7 @@ export type InboundMessageDecision = {
 
 export type IntentDecisionAction = "allow" | "warn" | "block" | "modify";
 
+/** Request to establish the intent baseline from the LLM prompt and history (platform mode). */
 export type IntentBaselineDecisionRequest = {
   projectId?: string;
   agentInstanceId?: string;
@@ -179,6 +208,7 @@ export type IntentBaselineDecisionRequest = {
   model?: string;
 };
 
+/** Request to check a tool call against the established intent baseline (platform mode). */
 export type IntentActionDecisionRequest = {
   projectId?: string;
   agentInstanceId?: string;
@@ -195,6 +225,7 @@ export type IntentActionDecisionRequest = {
   params: Record<string, unknown>;
 };
 
+/** Request to analyze tool output for suspicious content (platform mode). */
 export type IntentOutputDecisionRequest = {
   projectId?: string;
   agentInstanceId?: string;
@@ -213,6 +244,7 @@ export type IntentOutputDecisionRequest = {
   isSynthetic?: boolean;
 };
 
+/** LLM-powered intent analysis result from the platform. Includes drift scoring and signal detection. */
 export type IntentDecision = {
   action: IntentDecisionAction;
   mode?: "off" | "audit" | "enforce";
@@ -244,6 +276,13 @@ export type PaymentsSendResponse = {
   reason?: string;
 };
 
+/**
+ * Unified runtime interface produced by all operating modes.
+ *
+ * Hook handlers call methods like `rt.decideToolCall()` without knowing whether
+ * the decision comes from local rules (in-process) or the remote platform (HTTP).
+ * In local mode, intent methods return null; in platform mode, they proxy to the SIEM.
+ */
 export type ClawdstrikeRuntime = {
   config: ClawdstrikePluginConfig;
   emit: (evt: Omit<TelemetryEnvelope, "eventId" | "ts"> & { eventId?: string; ts?: number }) => void;

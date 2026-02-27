@@ -1,3 +1,16 @@
+/**
+ * @module prompt-directives
+ * @description Builds security directive text for injection into the LLM's prompt.
+ *
+ * Two injection levels:
+ * 1. **System prompt** (via before_agent_start) — authoritative, persists across turns.
+ *    Includes all directives, blocked domains, blocked commands, and commands requiring approval.
+ * 2. **Prepend context** (via before_prompt_build) — lightweight per-turn reinforcement
+ *    with rule counts to remind the model that security is active.
+ *
+ * The LLM system prompt is advisory (the model can ignore it), but it is reinforced
+ * by the deterministic rule engine that blocks actions at the hook layer regardless.
+ */
 import type { LocalRuleStore } from "./rule-store.js";
 
 /**

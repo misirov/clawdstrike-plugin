@@ -1,8 +1,21 @@
+/**
+ * @module tools/payments-send
+ * @description Defines the `payments.send` tool that agents can invoke to
+ * submit policy-enforced payment requests through the ClawdStrike platform.
+ * The tool validates inputs, emits telemetry for both the request and the
+ * result, and translates platform responses (submitted / blocked / error)
+ * into appropriate success or error outcomes for the caller.
+ */
+
 import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
 import { jsonResult } from "openclaw/plugin-sdk";
 import crypto from "node:crypto";
 import { getRuntime } from "../runtime.js";
 
+/**
+ * JSON Schema definition for the `payments.send` tool parameters.
+ * Requires `toAddress` and `amount`; all other fields are optional.
+ */
 const paymentSendParameters = {
   type: "object",
   additionalProperties: false,
@@ -35,6 +48,24 @@ const paymentSendParameters = {
   },
 };
 
+/**
+ * @description Factory function that creates the `payments.send` tool
+ * definition, including its JSON Schema, metadata, and async `execute`
+ * handler. The returned tool object is intended to be registered with the
+ * OpenClaw plugin SDK.
+ *
+ * The execute handler:
+ * 1. Retrieves the active ClawdStrike runtime.
+ * 2. Validates required `toAddress` and `amount` parameters.
+ * 3. Emits a "payment/send" telemetry event before dispatching the request.
+ * 4. Calls the platform's `paymentsSend` endpoint.
+ * 5. Emits a "payment/send_result" telemetry event with the outcome.
+ * 6. Throws on "blocked" or "error" responses; returns the result on success.
+ *
+ * @param _api - The OpenClaw plugin API (reserved for future use).
+ * @returns A tool descriptor object with `name`, `label`, `description`,
+ *   `parameters`, and `execute` members.
+ */
 export function createPaymentsSendTool(_api: OpenClawPluginApi) {
   return {
     name: "payments.send",

@@ -1,3 +1,30 @@
+/**
+ * @module default-rules
+ * @description Default security rules and prompt directives shipped with the plugin.
+ *
+ * These are written to rules.json on first install (when the file doesn't exist)
+ * or when the user runs `/cs reset confirm`. They provide baseline protection against
+ * common AI agent attack vectors documented in:
+ * - Snyk ToxicSkills research (malicious ClawhHub skills)
+ * - 1Password "From Magic to Malware" (ClickFix-style OpenClaw attacks)
+ *
+ * 46 rules across 10 categories:
+ *   - Download & execute (curl, wget)
+ *   - Pipe to shell (| bash, | /bin/sh)
+ *   - Encoded/obfuscated execution (base64, eval)
+ *   - Reverse shells (/dev/tcp, mkfifo, netcat)
+ *   - Credential file access (.ssh/, .aws/, .gnupg/, .kube/)
+ *   - Persistence mechanisms (crontab, systemctl, launchctl)
+ *   - macOS Gatekeeper bypass (xattr quarantine)
+ *   - Permission escalation (chmod 777, chmod +s)
+ *   - Exfiltration/C2 domains (12 domains)
+ *   - Confirm rules for package managers and agent memory files
+ *
+ * 11 prompt directives covering anti-injection, credential protection,
+ * execution safety, dependency safety, memory integrity, and obfuscation awareness.
+ *
+ * Users can modify all rules and directives at runtime via /cs commands.
+ */
 import type { LocalRule } from "./rule-store.js";
 
 export const DEFAULT_RULES: LocalRule[] = [

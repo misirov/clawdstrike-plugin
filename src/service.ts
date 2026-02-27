@@ -1,3 +1,20 @@
+/**
+ * @module service
+ * @description ClawdStrike service factory — creates the {@link ClawdstrikeRuntime} for the active mode.
+ *
+ * The service implements OpenClaw's `OpenClawPluginService` interface (start/stop lifecycle).
+ * On `start()`, it resolves the plugin config, determines the operating mode, and builds
+ * the appropriate runtime:
+ *
+ * - **local** — creates a {@link LocalRuleStore}, wires `decideToolCall` to the local policy
+ *   engine, optionally starts a telemetry pipeline to the SIEM.
+ * - **audit/enforce** — creates a {@link PlatformClient} for remote policy decisions,
+ *   a {@link TelemetryQueue} for event streaming, inventory snapshots, and diagnostic/log
+ *   transports.
+ *
+ * Exposes `localRuleStoreRef` so the plugin entry (index.ts) can access the rule store
+ * for chat commands and prompt directive injection.
+ */
 import crypto from "node:crypto";
 import os from "node:os";
 import type { RuntimeEnv, OpenClawPluginService } from "openclaw/plugin-sdk";

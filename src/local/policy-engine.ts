@@ -1,3 +1,19 @@
+/**
+ * @module policy-engine
+ * @description Local rule evaluation engine for tool calls and outbound messages.
+ *
+ * Pure functions with no side effects — takes a sorted rules array and a request,
+ * returns the first matching decision or null (allow-by-default).
+ *
+ * Evaluation order per rule:
+ * 1. Extract targets (domains, IPs) from request params via recursive traversal
+ * 2. Match rules in priority order: domain → IP → tool (or message) scope
+ * 3. First match wins — returns allow/warn/block/confirm decision
+ *
+ * Target extraction scans nested objects up to 5 levels deep, finding URLs,
+ * domain patterns, IPv4/IPv6 addresses, and keys matching common naming
+ * conventions (host, url, ip, endpoint, etc.).
+ */
 import crypto from "node:crypto";
 import { isIP } from "node:net";
 import type { LocalRule } from "./rule-store.js";
@@ -174,6 +190,13 @@ function getDecisionId(prefix: string): string {
   return `local-${prefix}-${crypto.randomUUID().slice(0, 8)}`;
 }
 
+/**
+ * Evaluate a tool call request against the sorted rules array.
+ * Extracts domains/IPs from params, then checks domain → IP → tool rules in order.
+ * @param rules - Pre-sorted rules array (by priority ascending, then ID ascending)
+ * @param req - The tool call request containing toolName and params
+ * @returns First matching decision, or null if no rule matches (implicit allow)
+ */
 export function evaluateToolDecision(
   rules: LocalRule[],
   req: ToolDecisionRequest,
@@ -208,6 +231,13 @@ export function evaluateToolDecision(
   return null;
 }
 
+/**
+ * Evaluate an outbound message against the sorted rules array.
+ * Extracts domains/IPs from message content, then checks domain → IP → message rules.
+ * @param rules - Pre-sorted rules array (by priority ascending, then ID ascending)
+ * @param req - The message request containing channelId, to, and content
+ * @returns First matching decision, or null if no rule matches (implicit allow)
+ */
 export function evaluateMessageDecision(
   rules: LocalRule[],
   req: MessageDecisionRequest,
