@@ -1,6 +1,18 @@
-# ClawdStrike OpenClaw Plugin
+# ClawdStrike
 
-OpenClaw plugin (`id: clawdstrike`) that provides security guardrails and telemetry for AI agents. Works standalone with local rules or connected to a remote SIEM platform.
+An endpoint detection and response (EDR) security plugin for OpenClaw AI agents.
+
+## What is ClawdStrike?
+
+ClawdStrike is a security guardrails plugin that hooks into the OpenClaw agent lifecycle — intercepting tool calls, outbound messages, LLM interactions, and tool outputs at the hook layer before they execute. It acts as a policy enforcement point (PEP) that can block, allow, warn on, or require human approval for any agent action based on configurable rules.
+
+ClawdStrike operates in two modes:
+
+- **Local policy guard** (`--mode local`): Enforces security rules from a local `rules.json` file entirely offline. No data leaves the machine. Ships with 46 default rules covering common attack vectors (reverse shells, credential theft, persistence mechanisms, exfiltration domains, encoded payloads) and 11 prompt directives. Rules are fully manageable at runtime via `/cs` chat commands.
+
+- **SIEM-connected** (`--mode audit|enforce --platform-url <url> --token <token>`): Streams full agent telemetry (tool calls, messages, LLM I/O, session lifecycle, policy decisions) to the ClawdStrike SIEM platform with distributed tracing. The SIEM provides dashboards for traces, policy violations, alerts, intent drift detection, and agent inventory. In `enforce` mode, the platform returns real-time allow/block/modify decisions; in `audit` mode, it logs everything without blocking.
+
+Both modes can be combined: `--mode local --platform-url <url>` enforces rules locally while streaming telemetry to the SIEM for observability.
 
 ## Modes
 
