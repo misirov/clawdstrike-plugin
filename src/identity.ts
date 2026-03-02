@@ -1,6 +1,6 @@
 /**
  * @module identity
- * @description Manages the persistent agent identity for a ClawdStrike plugin
+ * @description Manages the persistent agent identity for a ClawSight plugin
  * instance. On first run a unique agent instance ID is generated and written
  * to disk; subsequent runs re-use the persisted identity so that the platform
  * can correlate telemetry across restarts. The module also gathers host-level
@@ -12,7 +12,7 @@ import crypto from "node:crypto";
 import os from "node:os";
 import path from "node:path";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import type { ClawdstrikePluginConfig } from "./service-types.js";
+import type { ClawsightPluginConfig } from "./service-types.js";
 
 /**
  * Shape of the identity JSON file stored on disk.
@@ -55,21 +55,21 @@ function asString(value: unknown): string | undefined {
 
 /**
  * @description Returns the default filesystem path where the identity file is
- * persisted (`~/.openclaw/plugins/clawdstrike/identity.json`).
+ * persisted (`~/.openclaw/plugins/clawsight/identity.json`).
  * @returns Absolute path to the default identity file.
  */
 function defaultIdentityPath(): string {
-  return path.join(os.homedir(), ".openclaw", "plugins", "clawdstrike", "identity.json");
+  return path.join(os.homedir(), ".openclaw", "plugins", "clawsight", "identity.json");
 }
 
 /**
  * @description Resolves the plugin version string from environment variables.
- * Checks `CLAWDSTRIKE_PLUGIN_VERSION` first, then `npm_package_version`.
+ * Checks `CLAWSIGHT_PLUGIN_VERSION` first, then `npm_package_version`.
  * @returns The version string or `undefined` if unavailable.
  */
 function resolvePluginVersion(): string | undefined {
   return (
-    asString(process.env.CLAWDSTRIKE_PLUGIN_VERSION) ||
+    asString(process.env.CLAWSIGHT_PLUGIN_VERSION) ||
     asString(process.env.npm_package_version) ||
     undefined
   );
@@ -134,7 +134,7 @@ async function writePersistedIdentity(filePath: string, data: PersistedIdentity)
  * @returns A complete {@link RuntimeAgentIdentity} for the current session.
  */
 export async function resolveRuntimeAgentIdentity(
-  cfg: ClawdstrikePluginConfig,
+  cfg: ClawsightPluginConfig,
 ): Promise<RuntimeAgentIdentity> {
   const identityPath = asString(cfg.identityPath) || defaultIdentityPath();
   const persisted = await readPersistedIdentity(identityPath);

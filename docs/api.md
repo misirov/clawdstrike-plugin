@@ -6,8 +6,8 @@ The plugin exports a default object with `register(api)` that wires into OpenCla
 
 ```typescript
 export default {
-  id: "clawdstrike",
-  name: "ClawdStrike",
+  id: "clawsight",
+  name: "ClawSight",
   configSchema: emptyPluginConfigSchema(),
   register(api: OpenClawPluginApi) { ... }
 }
@@ -15,11 +15,11 @@ export default {
 
 ## Runtime Interface
 
-All modes produce a `ClawdstrikeRuntime` with the same interface:
+All modes produce a `ClawsightRuntime` with the same interface:
 
 ```typescript
-type ClawdstrikeRuntime = {
-  config: ClawdstrikePluginConfig;
+type ClawsightRuntime = {
+  config: ClawsightPluginConfig;
   emit: (evt) => void;
   decideToolCall: (req: ToolDecisionRequest) => Promise<ToolDecision | null>;
   decideOutboundMessage: (req: MessageDecisionRequest) => Promise<MessageDecision | null>;

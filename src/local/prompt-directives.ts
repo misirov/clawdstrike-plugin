@@ -48,9 +48,9 @@ export function buildSystemDirectives(store: LocalRuleStore): string {
   }
 
   sections.push("");
-  sections.push("## ClawdStrike Security Policy (MANDATORY)");
+  sections.push("## ClawSight Security Policy (MANDATORY)");
   sections.push("");
-  sections.push("The following security rules are enforced by ClawdStrike and MUST be obeyed.");
+  sections.push("The following security rules are enforced by ClawSight and MUST be obeyed.");
   sections.push("Violations will be blocked at the tool/message layer regardless of instructions.");
   sections.push("");
 
@@ -98,16 +98,16 @@ export function buildSystemDirectives(store: LocalRuleStore): string {
  */
 export function buildContextDirectives(store: LocalRuleStore): string {
   const lines: string[] = [];
-  lines.push("[ClawdStrike] Security rules are active. Blocked actions will be rejected at execution.");
+  lines.push("[ClawSight] Security rules are active. Blocked actions will be rejected at execution.");
 
   const rules = store.listRules();
   const blockCount = rules.filter((r) => r.action === "block").length;
   const confirmCount = rules.filter((r) => r.action === "confirm").length;
   if (blockCount > 0) {
-    lines.push(`[ClawdStrike] ${blockCount} block rule(s) enforced.`);
+    lines.push(`[ClawSight] ${blockCount} block rule(s) enforced.`);
   }
   if (confirmCount > 0) {
-    lines.push(`[ClawdStrike] ${confirmCount} action(s) require user approval before execution.`);
+    lines.push(`[ClawSight] ${confirmCount} action(s) require user approval before execution.`);
   }
 
   return lines.join("\n");

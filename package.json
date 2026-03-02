@@ -1,11 +1,11 @@
 {
-  "name": "@cantinasecurity/clawdstrike",
-  "version": "0.1.1",
+  "name": "@cantinasecurity/clawsight",
+  "version": "0.2.0",
   "packageManager": "pnpm@9.15.3",
-  "description": "ClawdStrike security guardrails and telemetry plugin for OpenClaw",
+  "description": "ClawSight — EDR for AI agents. Security guardrails and telemetry plugin for OpenClaw.",
   "type": "module",
   "bin": {
-    "clawdstrike": "./bin/clawdstrike.mjs"
+    "clawsight": "./bin/clawsight.mjs"
   },
   "dependencies": {
     "openclaw": "^2026.2.14"

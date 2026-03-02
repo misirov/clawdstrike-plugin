@@ -2,7 +2,7 @@
 
 ## Overview
 
-ClawdStrike provides five security layers that work together:
+ClawSight provides five security layers that work together:
 
 ```
 Layer 1: System Prompt Directives (advisory, high-authority)

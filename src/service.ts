@@ -1,6 +1,6 @@
 /**
  * @module service
- * @description ClawdStrike service factory — creates the {@link ClawdstrikeRuntime} for the active mode.
+ * @description ClawSight service factory — creates the {@link ClawsightRuntime} for the active mode.
  *
  * The service implements OpenClaw's `OpenClawPluginService` interface (start/stop lifecycle).
  * On `start()`, it resolves the plugin config, determines the operating mode, and builds
@@ -26,7 +26,7 @@ import { PlatformClient } from "./platform-client.js";
 import { LocalRuleStore } from "./local/rule-store.js";
 import { evaluateToolDecision as localEvalTool, evaluateMessageDecision as localEvalMessage } from "./local/policy-engine.js";
 import type {
-  ClawdstrikeRuntime,
+  ClawsightRuntime,
   IntentActionDecisionRequest,
   IntentBaselineDecisionRequest,
   IntentDecision,
@@ -153,19 +153,19 @@ function resolveDiagnosticTriggerType(params: {
   return "system";
 }
 
-export function createClawdstrikeService(params: {
+export function createClawsightService(params: {
   pluginConfig: Record<string, unknown>;
   runtime?: RuntimeEnv;
 }): OpenClawPluginService {
   let stopLogTransport: (() => void) | null = null;
   let unsubscribeDiagnostics: (() => void) | null = null;
   let queue: TelemetryQueue | null = null;
-  let runtime: ClawdstrikeRuntime | null = null;
+  let runtime: ClawsightRuntime | null = null;
   let inventoryTimer: ReturnType<typeof setInterval> | null = null;
   let inventorySnapshotInFlight = false;
 
   return {
-    id: "clawdstrike",
+    id: "clawsight",
     async start(ctx) {
       inventorySnapshotInFlight = false;
       if (inventoryTimer) {
@@ -183,7 +183,7 @@ export function createClawdstrikeService(params: {
       if (cfg.mode === "local") {
         const rulesPath = cfg.localRulesPath;
         if (!rulesPath) {
-          ctx.logger.warn("clawdstrike: localRulesPath is not configured for local mode. Plugin disabled.");
+          ctx.logger.warn("clawsight: localRulesPath is not configured for local mode. Plugin disabled.");
           setRuntime(null);
           return;
         }
@@ -199,7 +199,7 @@ export function createClawdstrikeService(params: {
         if (hasPlatform) {
           if (isInsecurePlatformUrl(cfg.platformUrl)) {
             ctx.logger.warn(
-              "clawdstrike: platformUrl is HTTP on a non-localhost host. Telemetry and API token will be sent unencrypted. Use HTTPS in production.",
+              "clawsight: platformUrl is HTTP on a non-localhost host. Telemetry and API token will be sent unencrypted. Use HTTPS in production.",
             );
           }
           let runtimeIdentity:
@@ -211,7 +211,7 @@ export function createClawdstrikeService(params: {
             cfg.agentName = runtimeIdentity.agentName;
             cfg.identityPath = runtimeIdentity.identityPath;
           } catch (err) {
-            ctx.logger.warn(`clawdstrike: failed to resolve persistent identity: ${String(err)}`);
+            ctx.logger.warn(`clawsight: failed to resolve persistent identity: ${String(err)}`);
             if (!cfg.agentInstanceId) {
               cfg.agentInstanceId = crypto.randomUUID();
             }
@@ -246,7 +246,7 @@ export function createClawdstrikeService(params: {
           } as any);
         }
 
-        const localRt: ClawdstrikeRuntime = {
+        const localRt: ClawsightRuntime = {
           config: cfg,
           emit: (evt) => {
             if (!localQueue) return;
@@ -288,20 +288,20 @@ export function createClawdstrikeService(params: {
         setRuntime(localRt);
         const telemetryStatus = hasPlatform ? `telemetry → ${cfg.platformUrl}` : "telemetry off";
         ctx.logger.info(
-          `clawdstrike: local mode active — ${localStore.ruleCount} rules loaded from ${rulesPath} (${telemetryStatus})`,
+          `clawsight: local mode active — ${localStore.ruleCount} rules loaded from ${rulesPath} (${telemetryStatus})`,
         );
         return;
       }
 
       if (!cfg.platformUrl) {
-        ctx.logger.warn("clawdstrike: platformUrl is not configured. Plugin disabled until configured.");
+        ctx.logger.warn("clawsight: platformUrl is not configured. Plugin disabled until configured.");
         setRuntime(null);
         return;
       }
 
       if (isInsecurePlatformUrl(cfg.platformUrl)) {
         ctx.logger.warn(
-          "clawdstrike: platformUrl is HTTP on a non-localhost host. Telemetry and API token will be sent unencrypted. Use HTTPS in production.",
+          "clawsight: platformUrl is HTTP on a non-localhost host. Telemetry and API token will be sent unencrypted. Use HTTPS in production.",
         );
       }
 
@@ -314,7 +314,7 @@ export function createClawdstrikeService(params: {
         cfg.agentName = runtimeIdentity.agentName;
         cfg.identityPath = runtimeIdentity.identityPath;
       } catch (err) {
-        ctx.logger.warn(`clawdstrike: failed to resolve persistent identity: ${String(err)}`);
+        ctx.logger.warn(`clawsight: failed to resolve persistent identity: ${String(err)}`);
         if (!cfg.agentInstanceId) {
           cfg.agentInstanceId = crypto.randomUUID();
         }
@@ -351,7 +351,7 @@ export function createClawdstrikeService(params: {
               undefined,
             pluginVersion:
               runtimeIdentity?.pluginVersion ||
-              asString(process.env.CLAWDSTRIKE_PLUGIN_VERSION) ||
+              asString(process.env.CLAWSIGHT_PLUGIN_VERSION) ||
               asString(process.env.npm_package_version) ||
               undefined,
             mode: cfg.mode,
@@ -407,7 +407,7 @@ export function createClawdstrikeService(params: {
         void emitInventorySnapshot("periodic");
       }, 10 * 60 * 1000);
 
-      const rt: ClawdstrikeRuntime = {
+      const rt: ClawsightRuntime = {
         config: cfg,
         emit: (evt) => {
           if (!queue) {
@@ -991,7 +991,7 @@ export function createClawdstrikeService(params: {
       }
 
       ctx.logger.info(
-        `clawdstrike: enabled mode=${cfg.mode} platform=${cfg.platformUrl} capture=${safeStringify(cfg.capture)}`,
+        `clawsight: enabled mode=${cfg.mode} platform=${cfg.platformUrl} capture=${safeStringify(cfg.capture)}`,
       );
     },
 
@@ -999,7 +999,7 @@ export function createClawdstrikeService(params: {
       try {
         await runtime?.stop();
       } catch (err) {
-        ctx.logger.warn(`clawdstrike: stop failed: ${String(err)}`);
+        ctx.logger.warn(`clawsight: stop failed: ${String(err)}`);
       } finally {
         runtime = null;
         setRuntime(null);

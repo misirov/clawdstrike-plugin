@@ -1,10 +1,10 @@
-# ClawdStrike
+# ClawSight
 
 EDR for AI agents.
 
 ## Table of Contents
 
-- [What is ClawdStrike?](#what-is-clawdstrike)
+- [What is ClawSight?](#what-is-clawsight)
 - [Installation](#installation)
 - [Commands](#commands)
 - [Architecture](#architecture)
@@ -17,15 +17,15 @@ EDR for AI agents.
 **Docs:**
 [Architecture](docs/architecture.md) | [Capabilities](docs/capabilities.md) | [Configuration](docs/configuration.md) | [Local Rules](docs/local_rules.md) | [SIEM Rules](docs/siem_rules.md) | [API Reference](docs/api.md)
 
-## What is ClawdStrike?
+## What is ClawSight?
 
-ClawdStrike is an endpoint detection and response (EDR) plugin for OpenClaw AI agents. Where traditional EDR monitors host processes and syscalls, ClawdStrike treats the agent as the endpoint — hooking into the OpenClaw agent lifecycle to intercept tool calls, outbound messages, LLM interactions, and tool outputs at the plugin layer before they execute. It acts as a policy enforcement point (PEP) that can block, allow, warn on, or require human approval for any agent action based on configurable rules.
+ClawSight is an endpoint detection and response (EDR) plugin for OpenClaw AI agents. Where traditional EDR monitors host processes and syscalls, ClawSight treats the agent as the endpoint — hooking into the OpenClaw agent lifecycle to intercept tool calls, outbound messages, LLM interactions, and tool outputs at the plugin layer before they execute. It acts as a policy enforcement point (PEP) that can block, allow, warn on, or require human approval for any agent action based on configurable rules.
 
-ClawdStrike operates in two modes:
+ClawSight operates in two modes:
 
 - **Local policy guard** (`--mode local`): Enforces security rules from a local `rules.json` file entirely offline. No data leaves the machine. Ships with 46 default rules covering common attack vectors (reverse shells, credential theft, persistence mechanisms, exfiltration domains, encoded payloads) and 11 prompt directives. Rules are fully manageable at runtime via `/cs` chat commands.
 
-- **SIEM-connected** (`--mode audit|enforce --platform-url <url> --token <token>`): Streams full agent telemetry (tool calls, messages, LLM I/O, session lifecycle, policy decisions) to the ClawdStrike SIEM platform with distributed tracing. The SIEM provides dashboards for traces, policy violations, alerts, intent drift detection, and agent inventory. In `enforce` mode, the platform returns real-time allow/block/modify decisions; in `audit` mode, it logs everything without blocking.
+- **SIEM-connected** (`--mode audit|enforce --platform-url <url> --token <token>`): Streams full agent telemetry (tool calls, messages, LLM I/O, session lifecycle, policy decisions) to the ClawSight SIEM platform with distributed tracing. The SIEM provides dashboards for traces, policy violations, alerts, intent drift detection, and agent inventory. In `enforce` mode, the platform returns real-time allow/block/modify decisions; in `audit` mode, it logs everything without blocking.
 
 Both modes can be combined: `--mode local --platform-url <url>` enforces rules locally while streaming telemetry to the SIEM for observability.
 
@@ -34,7 +34,7 @@ Both modes can be combined: `--mode local --platform-url <url>` enforces rules l
 Install on OpenClaw:
 
 ```bash
-npx -y @cantinasecurity/clawdstrike install --mode local --link
+npx -y @cantinasecurity/clawsight install --mode local --link
 ```
 
 Then restart the gateway to apply changes:
@@ -45,7 +45,7 @@ openclaw gateway restart
 
 ## Commands
 
-Manage ClawdStrike from any connected chat channel (Telegram, Discord, Slack):
+Manage ClawSight from any connected chat channel (Telegram, Discord, Slack):
 
 ### Status & inspection
 
@@ -154,11 +154,11 @@ Remove a rule you no longer need:
 graph LR
     User["User<br/>(Telegram / Discord / Slack)"]
     Agent["OpenClaw Agent"]
-    Plugin["ClawdStrike Plugin"]
+    Plugin["ClawSight Plugin"]
     Engine["Policy Engine<br/>(rules.json)"]
     Approval["Approval Manager"]
     Directives["Prompt Directives"]
-    SIEM["ClawdStrike SIEM Platform"]
+    SIEM["ClawSight SIEM Platform"]
 
     User -->|message| Agent
     Agent --> Plugin
@@ -171,48 +171,48 @@ graph LR
     Agent -->|response| User
 ```
 
-**OpenClaw gateway lifecycle with ClawdStrike hooks:**
+**OpenClaw gateway lifecycle with ClawSight hooks:**
 
 ```mermaid
 flowchart TD
     A["User message arrives<br/>(Telegram / Discord / Slack)"] --> B
 
     B["<b>message_received</b>"]
-    B -. "ClawdStrike: emit telemetry" .-> T[("SIEM")]
+    B -. "ClawSight: emit telemetry" .-> T[("SIEM")]
     B --> C
 
     C["<b>before_agent_start</b>"]
-    C -. "ClawdStrike: inject security<br/>directives into system prompt" .-> LLM_SYS[/"System prompt"/]
+    C -. "ClawSight: inject security<br/>directives into system prompt" .-> LLM_SYS[/"System prompt"/]
     C --> D
 
     D["<b>before_prompt_build</b>"]
-    D -. "ClawdStrike: reinforce directives<br/>in user message context (per-turn)" .-> LLM_CTX[/"Prepend context"/]
+    D -. "ClawSight: reinforce directives<br/>in user message context (per-turn)" .-> LLM_CTX[/"Prepend context"/]
     D --> E
 
     E["<b>llm_input</b>"]
-    E -. "ClawdStrike: emit telemetry,<br/>intent baseline (platform mode)" .-> T
+    E -. "ClawSight: emit telemetry,<br/>intent baseline (platform mode)" .-> T
     E --> F
 
     F["LLM generates response"]
     F -->|"LLM wants to call a tool"| G
 
     G["<b>before_tool_call</b>"]
-    G -. "ClawdStrike: evaluate rules" .-> G
+    G -. "ClawSight: evaluate rules" .-> G
     G -->|ALLOW| H["Tool executes"]
     G -->|BLOCK| G_BLOCK["Tool prevented,<br/>error returned to LLM"]
     G -->|CONFIRM| G_CONFIRM["Held for<br/>/cs approve"]
     G -->|WARN| H
 
     H --> I["<b>after_tool_call</b>"]
-    I -. "ClawdStrike: emit telemetry,<br/>intent output check (platform mode)" .-> T
+    I -. "ClawSight: emit telemetry,<br/>intent output check (platform mode)" .-> T
     I --> J
 
     J["<b>tool_result_persist</b>"]
-    J -. "ClawdStrike: emit telemetry" .-> T
+    J -. "ClawSight: emit telemetry" .-> T
     J -->|"LLM may call more tools<br/>or generate final response"| K
 
     K["<b>message_sending</b>"]
-    K -. "ClawdStrike: evaluate message rules<br/>+ output enforcement<br/>(append / require / reject)" .-> K
+    K -. "ClawSight: evaluate message rules<br/>+ output enforcement<br/>(append / require / reject)" .-> K
     K --> L
 
     L["Message sent to user<br/>(Telegram / Discord / Slack)"]
@@ -220,7 +220,7 @@ flowchart TD
 
 ## Default Rules
 
-ClawdStrike ships with 46 rules and 11 prompt directives, enforced out of the box on first install. All are fully editable via `/cs` commands.
+ClawSight ships with 46 rules and 11 prompt directives, enforced out of the box on first install. All are fully editable via `/cs` commands.
 
 ### Block rules (40)
 
@@ -265,7 +265,7 @@ Injected into the LLM system prompt as advisory guidance:
 
 ## Approval Flow
 
-When a confirm rule matches, ClawdStrike blocks the tool call and creates a pending approval:
+When a confirm rule matches, ClawSight blocks the tool call and creates a pending approval:
 
 ```
 1. Agent tries:  exec("npm install express")
@@ -288,12 +288,12 @@ Three resolution options:
 
 ## SIEM Mode
 
-To connect to the ClawdStrike SIEM platform for telemetry and remote policy enforcement:
+To connect to the ClawSight SIEM platform for telemetry and remote policy enforcement:
 
 ### Audit mode (observe only)
 
 ```bash
-npx -y @cantinasecurity/clawdstrike install \
+npx -y @cantinasecurity/clawsight install \
   --mode audit \
   --platform-url https://your-siem.example.com \
   --token YOUR_API_TOKEN \
@@ -308,7 +308,7 @@ All agent activity is streamed to the SIEM. No actions are blocked — the platf
 ### Enforce mode (block on policy violations)
 
 ```bash
-npx -y @cantinasecurity/clawdstrike install \
+npx -y @cantinasecurity/clawsight install \
   --mode enforce \
   --platform-url https://your-siem.example.com \
   --token YOUR_API_TOKEN \
@@ -323,7 +323,7 @@ The SIEM platform returns real-time allow/block/modify decisions for every tool 
 ### Local + SIEM (enforce locally, observe remotely)
 
 ```bash
-npx -y @cantinasecurity/clawdstrike install \
+npx -y @cantinasecurity/clawsight install \
   --mode local \
   --platform-url https://your-siem.example.com \
   --token YOUR_API_TOKEN \
@@ -343,7 +343,7 @@ See [docs/configuration.md](docs/configuration.md) for the full reference with a
 | `mode` | string | `"audit"` | `off`, `audit`, `enforce`, or `local` |
 | `platformUrl` | string | — | SIEM platform URL (required for audit/enforce, optional for local) |
 | `apiToken` | string | — | Platform API token (supports `${ENV_VAR}` syntax) |
-| `localRulesPath` | string | `~/.openclaw/plugins/clawdstrike/rules.json` | Path to local rules file |
+| `localRulesPath` | string | `~/.openclaw/plugins/clawsight/rules.json` | Path to local rules file |
 | `agentName` | string | — | Human-readable agent label shown in SIEM |
 | `agentInstanceId` | string | auto-generated | Stable instance ID (persisted to `identity.json`) |
 | `flushIntervalMs` | number | `1000` | Telemetry batch flush interval (ms) |

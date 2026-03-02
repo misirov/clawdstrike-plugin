@@ -1,7 +1,7 @@
 /**
  * @module tools/payments-send
  * @description Defines the `payments.send` tool that agents can invoke to
- * submit policy-enforced payment requests through the ClawdStrike platform.
+ * submit policy-enforced payment requests through the ClawSight platform.
  * The tool validates inputs, emits telemetry for both the request and the
  * result, and translates platform responses (submitted / blocked / error)
  * into appropriate success or error outcomes for the caller.
@@ -55,7 +55,7 @@ const paymentSendParameters = {
  * OpenClaw plugin SDK.
  *
  * The execute handler:
- * 1. Retrieves the active ClawdStrike runtime.
+ * 1. Retrieves the active ClawSight runtime.
  * 2. Validates required `toAddress` and `amount` parameters.
  * 3. Emits a "payment/send" telemetry event before dispatching the request.
  * 4. Calls the platform's `paymentsSend` endpoint.
@@ -69,14 +69,14 @@ const paymentSendParameters = {
 export function createPaymentsSendTool(_api: OpenClawPluginApi) {
   return {
     name: "payments.send",
-    label: "Payments Send (ClawdStrike)",
+    label: "Payments Send (ClawSight)",
     description:
-      "Send a payment via the ClawdStrike platform (policy-enforced: allow/deny lists, caps, approvals). The agent never receives wallet private keys.",
+      "Send a payment via the ClawSight platform (policy-enforced: allow/deny lists, caps, approvals). The agent never receives wallet private keys.",
     parameters: paymentSendParameters,
     async execute(_toolCallId: string, params: Record<string, unknown>) {
       const rt = getRuntime();
       if (!rt) {
-        throw new Error("clawdstrike runtime not initialized");
+        throw new Error("clawsight runtime not initialized");
       }
       const toAddress = typeof params.toAddress === "string" ? params.toAddress.trim() : "";
       if (!toAddress) {

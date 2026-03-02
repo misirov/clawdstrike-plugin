@@ -2,14 +2,14 @@
  * @module telemetry/queue
  * @description In-memory telemetry event queue that batches
  * {@link TelemetryEnvelope} events and periodically flushes them to the
- * ClawdStrike platform via a {@link PlatformClient}. The queue normalises
+ * ClawSight platform via a {@link PlatformClient}. The queue normalises
  * incoming events (assigning IDs, timestamps, and config-level defaults)
  * and respects the plugin's enabled/mode flags.
  */
 
 import crypto from "node:crypto";
 import type { PlatformClient } from "../platform-client.js";
-import type { ClawdstrikePluginConfig, TelemetryEnvelope } from "../service-types.js";
+import type { ClawsightPluginConfig, TelemetryEnvelope } from "../service-types.js";
 
 /**
  * @description Returns the current wall-clock time in milliseconds.
@@ -27,7 +27,7 @@ function nowMs(): number {
  * @param evt - The raw telemetry envelope, potentially missing auto-filled fields.
  * @returns A fully-populated {@link TelemetryEnvelope}.
  */
-function normalizeEvent(cfg: ClawdstrikePluginConfig, evt: TelemetryEnvelope): TelemetryEnvelope {
+function normalizeEvent(cfg: ClawsightPluginConfig, evt: TelemetryEnvelope): TelemetryEnvelope {
   return {
     ...evt,
     eventId: evt.eventId || crypto.randomUUID(),
@@ -48,7 +48,7 @@ function normalizeEvent(cfg: ClawdstrikePluginConfig, evt: TelemetryEnvelope): T
  */
 export class TelemetryQueue {
   /** Resolved plugin configuration. */
-  readonly cfg: ClawdstrikePluginConfig;
+  readonly cfg: ClawsightPluginConfig;
   /** Platform HTTP client used to ship event batches. */
   readonly client: PlatformClient;
 
@@ -63,7 +63,7 @@ export class TelemetryQueue {
    * @param params.client - Platform client for ingesting events.
    */
   constructor(params: {
-    cfg: ClawdstrikePluginConfig;
+    cfg: ClawsightPluginConfig;
     client: PlatformClient;
   }) {
     this.cfg = params.cfg;

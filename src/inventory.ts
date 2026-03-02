@@ -20,7 +20,7 @@ import path from "node:path";
 import { execFile } from "node:child_process";
 import { readdir, readFile, realpath, stat } from "node:fs/promises";
 import { promisify } from "node:util";
-import type { ClawdstrikePluginConfig } from "./service-types.js";
+import type { ClawsightPluginConfig } from "./service-types.js";
 
 type InventoryChannel = {
   id: string;
@@ -579,7 +579,7 @@ function buildCapabilities(snapshot: AgentInventorySnapshot): string[] {
  * @returns Snapshot object and its SHA256 signature for change detection
  */
 export async function collectAgentInventorySnapshot(params: {
-  cfg: ClawdstrikePluginConfig;
+  cfg: ClawsightPluginConfig;
   reason: "startup" | "periodic";
   runtimeIdentity?: SnapshotRuntimeIdentity;
 }): Promise<{

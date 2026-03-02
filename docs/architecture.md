@@ -2,11 +2,11 @@
 
 ## System Overview
 
-ClawdStrike is an OpenClaw plugin that sits between the AI agent and external systems, providing security guardrails and observability.
+ClawSight is an OpenClaw plugin that sits between the AI agent and external systems, providing security guardrails and observability.
 
 ```
                                     +---------------------------+
-                                    |    ClawdStrike SIEM       |
+                                    |    ClawSight SIEM       |
                                     |    (Remote Platform)      |
                                     |                           |
                                     |  /v1/telemetry/ingest     |
@@ -18,7 +18,7 @@ ClawdStrike is an OpenClaw plugin that sits between the AI agent and external sy
                                     (events)   |   | (allow/block/warn/confirm/modify)
                                                |   |
 +--------+     +----------+     +--------------+---v-----------+
-|        |     |          |     |      ClawdStrike Plugin       |
+|        |     |          |     |      ClawSight Plugin       |
 | Chat   +---->+ OpenClaw +---->+                               |
 | User   |     | Gateway  |     |  +----------+ +-----------+  |
 |        |<----+          |<----+  | Local    | | Platform  |  |
@@ -110,7 +110,7 @@ OpenClaw Gateway
 ### Plugin Entry (`index.ts`)
 
 The main plugin file registers:
-- **Service** (`createClawdstrikeService`): manages runtime lifecycle, creates either local or platform runtime
+- **Service** (`createClawsightService`): manages runtime lifecycle, creates either local or platform runtime
 - **Approval Manager**: in-memory pending approval map with TTL, used for confirm rules
 - **22 hook handlers**: wired to OpenClaw's event system for full agent lifecycle coverage
 - **Chat command** (`/cs`): interactive rule management via messaging platforms
@@ -118,7 +118,7 @@ The main plugin file registers:
 
 ### Service Layer (`src/service.ts`)
 
-Factory function that creates a `ClawdstrikeRuntime` based on mode:
+Factory function that creates a `ClawsightRuntime` based on mode:
 
 | Mode | PlatformClient | TelemetryQueue | LocalRuleStore | Policy Engine |
 |------|---------------|----------------|----------------|---------------|
@@ -127,14 +127,14 @@ Factory function that creates a `ClawdstrikeRuntime` based on mode:
 | `audit` | Yes | Yes | No | Remote (log-only) |
 | `enforce` | Yes | Yes | No | Remote (blocking) |
 
-### Runtime Interface (`ClawdstrikeRuntime`)
+### Runtime Interface (`ClawsightRuntime`)
 
 All modes produce the same interface. Hook handlers call `rt.decideToolCall()` etc. without knowing whether decisions come from local rules or the remote platform.
 
 ```
-ClawdstrikeRuntime
+ClawsightRuntime
   |
-  +-- config: ClawdstrikePluginConfig
+  +-- config: ClawsightPluginConfig
   +-- emit(event)                     --> telemetry
   +-- decideToolCall(req)             --> ToolDecision | null
   +-- decideOutboundMessage(req)      --> MessageDecision | null
@@ -149,12 +149,12 @@ ClawdstrikeRuntime
 ### File Structure
 
 ```
-clawdstrike-plugin/
+clawsight-plugin/
   index.ts                      Plugin entry, hook wiring, chat commands, approval manager
   openclaw.plugin.json          Plugin manifest and config schema
   package.json                  Package metadata
   bin/
-    clawdstrike.mjs             CLI installer
+    clawsight.mjs             CLI installer
   src/
     config.ts                   Configuration parsing
     service.ts                  Runtime factory (local + platform)

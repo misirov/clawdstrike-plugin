@@ -6,7 +6,7 @@ Local mode enforces security rules from a JSON file on disk without requiring a 
 
 ## Rules File
 
-Default location: `~/.openclaw/plugins/clawdstrike/rules.json`
+Default location: `~/.openclaw/plugins/clawsight/rules.json`
 
 ```json
 {

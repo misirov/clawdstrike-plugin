@@ -1,11 +1,11 @@
 # Configuration
 
-ClawdStrike is configured through OpenClaw's config system. All keys live under `plugins.entries.clawdstrike.config.*`.
+ClawSight is configured through OpenClaw's config system. All keys live under `plugins.entries.clawsight.config.*`.
 
 ## Setting values
 
 ```bash
-openclaw config set plugins.entries.clawdstrike.config.<key> <value>
+openclaw config set plugins.entries.clawsight.config.<key> <value>
 openclaw gateway restart
 ```
 
@@ -15,7 +15,7 @@ Changes require a gateway restart to take effect.
 
 | Key | Description |
 |-----|-------------|
-| `plugins.entries.clawdstrike.enabled` | Enable or disable the plugin (`true` / `false`) |
+| `plugins.entries.clawsight.enabled` | Enable or disable the plugin (`true` / `false`) |
 
 ## Config keys
 
@@ -26,7 +26,7 @@ Changes require a gateway restart to take effect.
 | `mode` | string | `"audit"` | Operating mode: `off`, `audit`, `enforce`, or `local` |
 | `platformUrl` | string | — | SIEM platform URL. Required for audit/enforce, optional for local |
 | `apiToken` | string | — | Platform API token. Supports `${ENV_VAR}` syntax |
-| `localRulesPath` | string | `~/.openclaw/plugins/clawdstrike/rules.json` | Path to local rules file (local mode) |
+| `localRulesPath` | string | `~/.openclaw/plugins/clawsight/rules.json` | Path to local rules file (local mode) |
 | `projectId` | string | — | Project identifier for SIEM scoping |
 
 ### Agent identity
@@ -35,7 +35,7 @@ Changes require a gateway restart to take effect.
 |-----|------|---------|-------------|
 | `agentName` | string | — | Human-readable agent label shown in SIEM |
 | `agentInstanceId` | string | auto-generated | Stable instance ID. If omitted, auto-generated and persisted |
-| `identityPath` | string | `~/.openclaw/plugins/clawdstrike/identity.json` | Path for persisted identity file |
+| `identityPath` | string | `~/.openclaw/plugins/clawsight/identity.json` | Path for persisted identity file |
 
 ### API paths
 
@@ -77,55 +77,55 @@ Control what data is included in telemetry events:
 ### Local mode (no SIEM)
 
 ```bash
-openclaw config set plugins.entries.clawdstrike.enabled true
-openclaw config set plugins.entries.clawdstrike.config.mode local
+openclaw config set plugins.entries.clawsight.enabled true
+openclaw config set plugins.entries.clawsight.config.mode local
 openclaw gateway restart
 ```
 
 ### Local mode + SIEM telemetry
 
 ```bash
-openclaw config set plugins.entries.clawdstrike.enabled true
-openclaw config set plugins.entries.clawdstrike.config.mode local
-openclaw config set plugins.entries.clawdstrike.config.platformUrl http://127.0.0.1:3000
-openclaw config set plugins.entries.clawdstrike.config.apiToken YOUR_TOKEN
+openclaw config set plugins.entries.clawsight.enabled true
+openclaw config set plugins.entries.clawsight.config.mode local
+openclaw config set plugins.entries.clawsight.config.platformUrl http://127.0.0.1:3000
+openclaw config set plugins.entries.clawsight.config.apiToken YOUR_TOKEN
 openclaw gateway restart
 ```
 
 ### Audit mode (observe only)
 
 ```bash
-openclaw config set plugins.entries.clawdstrike.enabled true
-openclaw config set plugins.entries.clawdstrike.config.mode audit
-openclaw config set plugins.entries.clawdstrike.config.platformUrl http://127.0.0.1:3000
-openclaw config set plugins.entries.clawdstrike.config.apiToken YOUR_TOKEN
-openclaw config set plugins.entries.clawdstrike.config.agentName my-agent
+openclaw config set plugins.entries.clawsight.enabled true
+openclaw config set plugins.entries.clawsight.config.mode audit
+openclaw config set plugins.entries.clawsight.config.platformUrl http://127.0.0.1:3000
+openclaw config set plugins.entries.clawsight.config.apiToken YOUR_TOKEN
+openclaw config set plugins.entries.clawsight.config.agentName my-agent
 openclaw gateway restart
 ```
 
 ### Enforce mode (block on policy violations)
 
 ```bash
-openclaw config set plugins.entries.clawdstrike.enabled true
-openclaw config set plugins.entries.clawdstrike.config.mode enforce
-openclaw config set plugins.entries.clawdstrike.config.platformUrl http://127.0.0.1:3000
-openclaw config set plugins.entries.clawdstrike.config.apiToken YOUR_TOKEN
-openclaw config set plugins.entries.clawdstrike.config.agentName my-agent
+openclaw config set plugins.entries.clawsight.enabled true
+openclaw config set plugins.entries.clawsight.config.mode enforce
+openclaw config set plugins.entries.clawsight.config.platformUrl http://127.0.0.1:3000
+openclaw config set plugins.entries.clawsight.config.apiToken YOUR_TOKEN
+openclaw config set plugins.entries.clawsight.config.agentName my-agent
 openclaw gateway restart
 ```
 
 ### Enable verbose telemetry
 
 ```bash
-openclaw config set plugins.entries.clawdstrike.config.capture.messageBody true
-openclaw config set plugins.entries.clawdstrike.config.capture.toolResult true
-openclaw config set plugins.entries.clawdstrike.config.capture.logs true
+openclaw config set plugins.entries.clawsight.config.capture.messageBody true
+openclaw config set plugins.entries.clawsight.config.capture.toolResult true
+openclaw config set plugins.entries.clawsight.config.capture.logs true
 openclaw gateway restart
 ```
 
 ### Disable the plugin
 
 ```bash
-openclaw config set plugins.entries.clawdstrike.enabled false
+openclaw config set plugins.entries.clawsight.enabled false
 openclaw gateway restart
 ```

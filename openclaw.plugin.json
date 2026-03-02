@@ -1,8 +1,8 @@
 {
-  "id": "clawdstrike",
-  "name": "ClawdStrike",
-  "description": "Telemetry + guardrails exporter (no OpenClaw source changes required).",
-  "version": "0.1.1",
+  "id": "clawsight",
+  "name": "ClawSight",
+  "description": "EDR for AI agents — security guardrails and telemetry (no OpenClaw source changes required).",
+  "version": "0.2.0",
   "configSchema": {
     "type": "object",
     "additionalProperties": false,
@@ -16,11 +16,11 @@
       "platformUrl": { "type": "string" },
       "localRulesPath": {
         "type": "string",
-        "description": "Path to local rules JSON file (default: ~/.openclaw/plugins/clawdstrike/rules.json). Only used in local mode."
+        "description": "Path to local rules JSON file (default: ~/.openclaw/plugins/clawsight/rules.json). Only used in local mode."
       },
       "apiToken": {
         "type": "string",
-        "description": "ClawdStrike platform API token. Prefer ${CLAWDSTRIKE_API_TOKEN} env substitution."
+        "description": "ClawSight platform API token. Prefer ${CLAWSIGHT_API_TOKEN} env substitution."
       },
       "projectId": { "type": "string" },
       "agentInstanceId": {
@@ -33,7 +33,7 @@
       },
       "identityPath": {
         "type": "string",
-        "description": "Path for persisted plugin identity file (default: ~/.openclaw/plugins/clawdstrike/identity.json)."
+        "description": "Path for persisted plugin identity file (default: ~/.openclaw/plugins/clawsight/identity.json)."
       },
       "ingestPath": { "type": "string", "default": "/v1/telemetry/ingest" },
       "decidePath": { "type": "string", "default": "/v1/guardrails/decide" },
@@ -64,10 +64,10 @@
   "required": []
   },
   "uiHints": {
-    "apiToken": { "label": "API Token", "sensitive": true, "placeholder": "${CLAWDSTRIKE_API_TOKEN}" },
-    "platformUrl": { "label": "Platform URL", "placeholder": "https://api.clawdstrike.example" },
+    "apiToken": { "label": "API Token", "sensitive": true, "placeholder": "${CLAWSIGHT_API_TOKEN}" },
+    "platformUrl": { "label": "Platform URL", "placeholder": "https://api.clawsight.example" },
     "mode": { "label": "Mode", "help": "audit: log only; enforce: block on policy violations; local: standalone rules from local file; off: disable." },
-    "localRulesPath": { "label": "Local Rules Path", "placeholder": "~/.openclaw/plugins/clawdstrike/rules.json" },
+    "localRulesPath": { "label": "Local Rules Path", "placeholder": "~/.openclaw/plugins/clawsight/rules.json" },
     "agentName": { "label": "Agent Name", "placeholder": "prod-openclaw-eu-west-1" },
     "agentInstanceId": { "label": "Agent Instance ID", "placeholder": "auto-generated-if-empty" }
   }

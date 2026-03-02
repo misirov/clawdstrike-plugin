@@ -9,7 +9,7 @@
  */
 
 import crypto from "node:crypto";
-import type { ClawdstrikeCaptureConfig } from "../service-types.js";
+import type { ClawsightCaptureConfig } from "../service-types.js";
 
 type RedactInput = {
   hook: string;
@@ -17,7 +17,7 @@ type RedactInput = {
   event: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   context?: any;
-  capture: ClawdstrikeCaptureConfig;
+  capture: ClawsightCaptureConfig;
 };
 
 type Artifact = {

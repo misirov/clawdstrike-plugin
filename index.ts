@@ -1,10 +1,10 @@
 /**
  * @module index
- * @description ClawdStrike plugin entry point — registers all hooks, commands, and the service.
+ * @description ClawSight plugin entry point — registers all hooks, commands, and the service.
  *
  * This is the main file loaded by OpenClaw's plugin system. It:
  *
- * 1. **Registers the service** ({@link createClawdstrikeService}) which manages the runtime lifecycle.
+ * 1. **Registers the service** ({@link createClawsightService}) which manages the runtime lifecycle.
  * 2. **Instantiates the approval manager** for human-in-the-loop confirm rules.
  * 3. **Wires 20+ hook handlers** to OpenClaw's event system:
  *    - `before_tool_call` — policy evaluation, approval flow, intent action check
@@ -24,13 +24,13 @@ import crypto from "node:crypto";
 import { emptyPluginConfigSchema } from "openclaw/plugin-sdk";
 import { getRuntime } from "./src/runtime.js";
 import { redactHookEventForTelemetry } from "./src/telemetry/redact.js";
-import { createClawdstrikeService, localRuleStoreRef } from "./src/service.js";
-import type { ClawdstrikeRuntime } from "./src/service-types.js";
+import { createClawsightService, localRuleStoreRef } from "./src/service.js";
+import type { ClawsightRuntime } from "./src/service-types.js";
 import { buildSystemDirectives, buildSecurityDirectives } from "./src/local/prompt-directives.js";
 
 import { ApprovalManager } from "./src/local/approval-manager.js";
 
-type RuntimeEmitEvent = Parameters<ClawdstrikeRuntime["emit"]>[0];
+type RuntimeEmitEvent = Parameters<ClawsightRuntime["emit"]>[0];
 type TraceContext = {
   traceId: string;
   runId?: string;
@@ -84,15 +84,15 @@ function extractHistorySnippets(value: unknown, maxItems = 8): string[] {
 }
 
 const plugin = {
-  id: "clawdstrike",
-  name: "ClawdStrike",
+  id: "clawsight",
+  name: "ClawSight",
   description: "Telemetry + guardrails exporter (no OpenClaw source changes required).",
   // NOTE: OpenClaw uses openclaw.plugin.json for config validation. This runtime schema is best-effort.
   configSchema: emptyPluginConfigSchema(),
   register(api: OpenClawPluginApi) {
     // Services run once per gateway boot and can subscribe to global event sources.
     api.registerService(
-      createClawdstrikeService({
+      createClawsightService({
         pluginConfig: api.pluginConfig ?? {},
         runtime: api.runtime,
       }),
@@ -607,7 +607,7 @@ const plugin = {
     }
 
     function emitWithTrace(
-      rt: ClawdstrikeRuntime,
+      rt: ClawsightRuntime,
       event: RuntimeEmitEvent,
       context: {
         sessionKey?: string;
@@ -1200,7 +1200,7 @@ const plugin = {
         }
 
         if (decision.action === "block") {
-          return { block: true, blockReason: decision.reason ?? "Blocked by ClawdStrike policy" };
+          return { block: true, blockReason: decision.reason ?? "Blocked by ClawSight policy" };
         }
         if (decision.action === "modify" && decision.params && typeof decision.params === "object") {
           effectiveParams = decision.params as Record<string, unknown>;
@@ -1732,7 +1732,7 @@ const plugin = {
     // --- Chat commands (processed by messaging platform dispatch) ---
     api.registerCommand({
       name: "cs",
-      description: "Manage ClawdStrike security rules",
+      description: "Manage ClawSight security rules",
       acceptsArgs: true,
       requireAuth: true,
       handler: async (ctx) => {
@@ -1749,7 +1749,7 @@ const plugin = {
           const outputRules = store?.getOutputRules() ?? [];
           const blockRules = store?.listRules().filter((r) => r.action === "block" && r.scope !== "output").length ?? 0;
           const lines = [
-            `ClawdStrike status:`,
+            `ClawSight status:`,
             `  Mode: ${mode}`,
             `  Rules loaded: ${ruleCount}`,
             ``,
@@ -1766,7 +1766,7 @@ const plugin = {
         }
 
         if (sub === "rules") {
-          if (!store) return { text: "ClawdStrike is not in local mode. No local rules available." };
+          if (!store) return { text: "ClawSight is not in local mode. No local rules available." };
           const rules = store.listRules();
           if (rules.length === 0) return { text: "No rules configured." };
           const lines = rules.map(
@@ -1776,7 +1776,7 @@ const plugin = {
         }
 
         if (sub === "block" || sub === "allow") {
-          if (!store) return { text: "ClawdStrike is not in local mode." };
+          if (!store) return { text: "ClawSight is not in local mode." };
           const action = sub as "block" | "allow";
           const scope = parts[1]?.toLowerCase();
 
@@ -1818,7 +1818,7 @@ const plugin = {
         }
 
         if (sub === "enforce") {
-          if (!store) return { text: "ClawdStrike is not in local mode." };
+          if (!store) return { text: "ClawSight is not in local mode." };
           const enforceSub = parts[1]?.toLowerCase();
 
           if (enforceSub === "append" && parts.slice(2).join(" ").trim()) {
@@ -1857,7 +1857,7 @@ const plugin = {
         }
 
         if (sub === "remove" && parts[1]) {
-          if (!store) return { text: "ClawdStrike is not in local mode." };
+          if (!store) return { text: "ClawSight is not in local mode." };
           const ids = parts.slice(1).map((p) => parseInt(p, 10)).filter((n) => !isNaN(n));
           if (ids.length === 0) return { text: "Invalid rule ID(s)." };
           const results: string[] = [];
@@ -1869,7 +1869,7 @@ const plugin = {
         }
 
         if (sub === "confirm") {
-          if (!store) return { text: "ClawdStrike is not in local mode." };
+          if (!store) return { text: "ClawSight is not in local mode." };
           const scope = parts[1]?.toLowerCase();
 
           if (scope === "command" || scope === "cmd") {
@@ -1929,7 +1929,7 @@ const plugin = {
         }
 
         if (sub === "approve-always") {
-          if (!store) return { text: "ClawdStrike is not in local mode." };
+          if (!store) return { text: "ClawSight is not in local mode." };
           const id = parts[1];
           if (!id) return { text: "Usage: /cs approve-always <id>" };
           const entry = approvalManager.resolve(id, "approved");
@@ -1955,7 +1955,7 @@ const plugin = {
         }
 
         if (sub === "reset") {
-          if (!store) return { text: "ClawdStrike is not in local mode." };
+          if (!store) return { text: "ClawSight is not in local mode." };
           const confirmFlag = parts[1]?.toLowerCase();
           if (confirmFlag !== "confirm") {
             return { text: "This will replace ALL rules and directives with defaults (46 rules, 11 directives).\nTo confirm, run: /cs reset confirm" };
@@ -1965,7 +1965,7 @@ const plugin = {
         }
 
         if (sub === "directives" || sub === "directive") {
-          if (!store) return { text: "ClawdStrike is not in local mode. No directives available." };
+          if (!store) return { text: "ClawSight is not in local mode. No directives available." };
           const directiveSub = parts[1]?.toLowerCase();
 
           if (directiveSub === "add" && parts.slice(2).join(" ").trim()) {
@@ -2003,7 +2003,7 @@ const plugin = {
         }
 
         return { text: [
-          "ClawdStrike commands:",
+          "ClawSight commands:",
           "",
           "Status & inspection:",
           "  /cs status — show mode and rule count",

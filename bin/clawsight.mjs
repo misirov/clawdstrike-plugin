@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 /**
- * @module clawdstrike-cli
- * @description CLI installer for the ClawdStrike OpenClaw plugin.
+ * @module clawsight-cli
+ * @description CLI installer for the ClawSight OpenClaw plugin.
  *
  * Usage:
- *   npx clawdstrike install --mode local [--link]
- *   npx clawdstrike install --platform-url <url> --token <token> --mode enforce [--link]
+ *   npx clawsight install --mode local [--link]
+ *   npx clawsight install --platform-url <url> --token <token> --mode enforce [--link]
  *
  * This script orchestrates the OpenClaw CLI to:
  * 1. Install the plugin package (`openclaw plugins install`)
- * 2. Enable the plugin (`openclaw plugins enable clawdstrike`)
+ * 2. Enable the plugin (`openclaw plugins enable clawsight`)
  * 3. Set configuration values (mode, platformUrl, apiToken, localRulesPath, etc.)
  *
  * For local mode, it creates the rules directory but does NOT write default rules —
@@ -27,17 +27,17 @@ import { fileURLToPath } from "node:url";
 function usage(exitCode = 1) {
   // Keep this lightweight (no deps).
   process.stderr.write(`\
-clawdstrike (OpenClaw plugin installer)
+clawsight (OpenClaw plugin installer)
 
 Usage:
-  clawdstrike install --platform-url <url> [--token <token> | --token-env <ENV>] [--mode audit|enforce] [--agent-name <name>] [--agent-instance-id <id>] [--link] [--openclaw <bin>]
-  clawdstrike install --mode local [--platform-url <url>] [--token <token>] [--link] [--openclaw <bin>]
+  clawsight install --platform-url <url> [--token <token> | --token-env <ENV>] [--mode audit|enforce] [--agent-name <name>] [--agent-instance-id <id>] [--link] [--openclaw <bin>]
+  clawsight install --mode local [--platform-url <url>] [--token <token>] [--link] [--openclaw <bin>]
 
 Examples:
-  clawdstrike install --platform-url http://127.0.0.1:8081 --token devtoken --mode enforce --link
-  clawdstrike install --platform-url https://api.example --token-env CLAWDSTRIKE_API_TOKEN --agent-name prod-agent-a
-  clawdstrike install --mode local --link
-  clawdstrike install --mode local --platform-url http://127.0.0.1:8081 --token devtoken --link
+  clawsight install --platform-url http://127.0.0.1:8081 --token devtoken --mode enforce --link
+  clawsight install --platform-url https://api.example --token-env CLAWSIGHT_API_TOKEN --agent-name prod-agent-a
+  clawsight install --mode local --link
+  clawsight install --mode local --platform-url http://127.0.0.1:8081 --token devtoken --link
 `);
   process.exit(exitCode);
 }
@@ -76,7 +76,7 @@ function patchConfigClearPlatform() {
   try {
     const raw = fs.readFileSync(configPath, "utf-8");
     const config = JSON.parse(raw);
-    const csConfig = config?.plugins?.entries?.clawdstrike?.config;
+    const csConfig = config?.plugins?.entries?.clawsight?.config;
     if (!csConfig) return;
     let changed = false;
     if (csConfig.apiToken && typeof csConfig.apiToken === "string" && csConfig.apiToken.includes("${")) {
@@ -131,31 +131,31 @@ if (cmd === "install") {
   // 1) Install plugin
   run(openclawBin, ["plugins", "install", ...(link ? ["-l"] : []), pluginRoot]);
   // 2) Enable plugin
-  run(openclawBin, ["plugins", "enable", "clawdstrike"]);
+  run(openclawBin, ["plugins", "enable", "clawsight"]);
   // 3) Configure plugin
-  run(openclawBin, ["config", "set", "plugins.entries.clawdstrike.config.mode", mode]);
+  run(openclawBin, ["config", "set", "plugins.entries.clawsight.config.mode", mode]);
 
   if (isLocal) {
     // Local mode: set rules path. Default rules (46 rules, 11 directives) are
     // created automatically by LocalRuleStore on first gateway start when the
     // file doesn't exist. This avoids duplicating the default rules here.
-    const rulesDir = path.join(os.homedir(), ".openclaw", "plugins", "clawdstrike");
+    const rulesDir = path.join(os.homedir(), ".openclaw", "plugins", "clawsight");
     const rulesPath = path.join(rulesDir, "rules.json");
     if (!fs.existsSync(rulesDir)) {
       fs.mkdirSync(rulesDir, { recursive: true });
     }
-    run(openclawBin, ["config", "set", "plugins.entries.clawdstrike.config.localRulesPath", rulesPath]);
+    run(openclawBin, ["config", "set", "plugins.entries.clawsight.config.localRulesPath", rulesPath]);
 
     // Optional: configure SIEM telemetry alongside local rules
     if (platformUrl) {
-      run(openclawBin, ["config", "set", "plugins.entries.clawdstrike.config.platformUrl", platformUrl]);
+      run(openclawBin, ["config", "set", "plugins.entries.clawsight.config.platformUrl", platformUrl]);
       if (token) {
-        run(openclawBin, ["config", "set", "plugins.entries.clawdstrike.config.apiToken", token]);
+        run(openclawBin, ["config", "set", "plugins.entries.clawsight.config.apiToken", token]);
       } else if (tokenEnv) {
         run(openclawBin, [
           "config",
           "set",
-          "plugins.entries.clawdstrike.config.apiToken",
+          "plugins.entries.clawsight.config.apiToken",
           `\${${tokenEnv}}`,
         ]);
         process.stderr.write(`Note: set ${tokenEnv} in the environment of the OpenClaw gateway process.\n`);
@@ -163,13 +163,13 @@ if (cmd === "install") {
         run(openclawBin, [
           "config",
           "set",
-          "plugins.entries.clawdstrike.config.apiToken",
-          "${CLAWDSTRIKE_API_TOKEN}",
+          "plugins.entries.clawsight.config.apiToken",
+          "${CLAWSIGHT_API_TOKEN}",
         ]);
-        process.stderr.write("Note: set CLAWDSTRIKE_API_TOKEN in the environment of the OpenClaw gateway process.\n");
+        process.stderr.write("Note: set CLAWSIGHT_API_TOKEN in the environment of the OpenClaw gateway process.\n");
       }
       process.stderr.write(
-        `ClawdStrike installed in local mode with telemetry → ${platformUrl}. Use /cs commands to manage rules.\n`,
+        `ClawSight installed in local mode with telemetry → ${platformUrl}. Use /cs commands to manage rules.\n`,
       );
     } else {
       // No SIEM — clear any stale platformUrl/apiToken from previous installs.
@@ -177,33 +177,33 @@ if (cmd === "install") {
       // so patch the JSON file directly as a fallback.
       patchConfigClearPlatform();
       process.stderr.write(
-        "ClawdStrike installed in local mode (no telemetry). Use /cs commands to manage rules.\n",
+        "ClawSight installed in local mode (no telemetry). Use /cs commands to manage rules.\n",
       );
     }
     process.exit(0);
   }
 
   // Platform modes (audit/enforce)
-  run(openclawBin, ["config", "set", "plugins.entries.clawdstrike.config.platformUrl", platformUrl]);
+  run(openclawBin, ["config", "set", "plugins.entries.clawsight.config.platformUrl", platformUrl]);
   if (agentName) {
-    run(openclawBin, ["config", "set", "plugins.entries.clawdstrike.config.agentName", agentName]);
+    run(openclawBin, ["config", "set", "plugins.entries.clawsight.config.agentName", agentName]);
   }
   if (agentInstanceId) {
     run(openclawBin, [
       "config",
       "set",
-      "plugins.entries.clawdstrike.config.agentInstanceId",
+      "plugins.entries.clawsight.config.agentInstanceId",
       agentInstanceId,
     ]);
   }
 
   if (token) {
-    run(openclawBin, ["config", "set", "plugins.entries.clawdstrike.config.apiToken", token]);
+    run(openclawBin, ["config", "set", "plugins.entries.clawsight.config.apiToken", token]);
   } else if (tokenEnv) {
     run(openclawBin, [
       "config",
       "set",
-      "plugins.entries.clawdstrike.config.apiToken",
+      "plugins.entries.clawsight.config.apiToken",
       `\${${tokenEnv}}`,
     ]);
     process.stderr.write(
@@ -214,11 +214,11 @@ if (cmd === "install") {
     run(openclawBin, [
       "config",
       "set",
-      "plugins.entries.clawdstrike.config.apiToken",
-      "${CLAWDSTRIKE_API_TOKEN}",
+      "plugins.entries.clawsight.config.apiToken",
+      "${CLAWSIGHT_API_TOKEN}",
     ]);
     process.stderr.write(
-      "Note: set CLAWDSTRIKE_API_TOKEN in the environment of the OpenClaw gateway process.\n",
+      "Note: set CLAWSIGHT_API_TOKEN in the environment of the OpenClaw gateway process.\n",
     );
   }
 

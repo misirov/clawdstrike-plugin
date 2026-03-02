@@ -2,11 +2,11 @@
 
 ## Overview
 
-In platform modes (`audit` and `enforce`), policy rules are managed on the ClawdStrike SIEM platform and enforced remotely. The plugin sends decision requests to the platform, which evaluates rules from its database and returns allow/warn/block/modify decisions.
+In platform modes (`audit` and `enforce`), policy rules are managed on the ClawSight SIEM platform and enforced remotely. The plugin sends decision requests to the platform, which evaluates rules from its database and returns allow/warn/block/modify decisions.
 
 ```
 +-------------------+          +------------------------+
-|  ClawdStrike      |   HTTP   |  ClawdStrike SIEM      |
+|  ClawSight      |   HTTP   |  ClawSight SIEM      |
 |  Plugin           +--------->|  Platform              |
 |                   |          |                        |
 |  before_tool_call |  decide  |  PolicyRule table      |

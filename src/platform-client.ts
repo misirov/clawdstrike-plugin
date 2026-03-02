@@ -1,6 +1,6 @@
 /**
  * @module platform-client
- * @description HTTP client for the Clawdstrike platform API. Provides typed
+ * @description HTTP client for the Clawsight platform API. Provides typed
  * methods for telemetry ingestion, policy decision endpoints (tool calls,
  * outbound/inbound messages, intent baseline/action/output), and payment
  * submission. All network calls are POST requests with JSON bodies, protected
@@ -8,7 +8,7 @@
  */
 
 import type {
-  ClawdstrikePluginConfig,
+  ClawsightPluginConfig,
   IntentActionDecisionRequest,
   IntentBaselineDecisionRequest,
   IntentDecision,
@@ -50,7 +50,7 @@ function asRecord(value: unknown): Record<string, unknown> | null {
 }
 
 /**
- * @description HTTP client for the Clawdstrike platform. Encapsulates all
+ * @description HTTP client for the Clawsight platform. Encapsulates all
  * outbound API calls including telemetry ingestion, policy decision requests
  * (tool, message, inbound message, intent), and payment submission. Each method
  * constructs the appropriate URL from the plugin configuration, serialises the
@@ -58,13 +58,13 @@ function asRecord(value: unknown): Record<string, unknown> | null {
  */
 export class PlatformClient {
   /** The plugin configuration containing URLs, paths, tokens, and network settings. */
-  readonly cfg: ClawdstrikePluginConfig;
+  readonly cfg: ClawsightPluginConfig;
 
   /**
    * @description Creates a new PlatformClient instance.
-   * @param cfg - The full Clawdstrike plugin configuration.
+   * @param cfg - The full Clawsight plugin configuration.
    */
-  constructor(cfg: ClawdstrikePluginConfig) {
+  constructor(cfg: ClawsightPluginConfig) {
     this.cfg = cfg;
   }
 
@@ -82,7 +82,7 @@ export class PlatformClient {
   /**
    * @description Sends a POST request with a JSON body to the given URL. Attaches
    * the Bearer authentication token (if configured) and an optional
-   * `x-clawdstrike-request-id` header. The request is aborted if it exceeds the
+   * `x-clawsight-request-id` header. The request is aborted if it exceeds the
    * configured timeout. Non-2xx responses throw an error containing the HTTP
    * status and the first 500 characters of the response body.
    * @param url - The fully-qualified endpoint URL.
@@ -98,7 +98,7 @@ export class PlatformClient {
       headers.authorization = `Bearer ${this.cfg.apiToken}`;
     }
     if (requestId) {
-      headers["x-clawdstrike-request-id"] = requestId;
+      headers["x-clawsight-request-id"] = requestId;
     }
 
     const controller = new AbortController();

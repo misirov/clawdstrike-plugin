@@ -1,14 +1,14 @@
 /**
  * @module config
- * @description Configuration resolution for the ClawdStrike plugin. Accepts a
+ * @description Configuration resolution for the ClawSight plugin. Accepts a
  * raw key-value object (typically sourced from the OpenClaw plugin manifest or
- * environment) and produces a fully-validated {@link ClawdstrikePluginConfig}
+ * environment) and produces a fully-validated {@link ClawsightPluginConfig}
  * with sensible defaults for every field.
  */
 
 import path from "node:path";
 import os from "node:os";
-import type { ClawdstrikePluginConfig, ClawdstrikeMode } from "./service-types.js";
+import type { ClawsightPluginConfig, ClawsightMode } from "./service-types.js";
 
 /**
  * @description Coerces an unknown value to a boolean, returning the supplied
@@ -44,13 +44,13 @@ function asString(value: unknown): string | undefined {
 
 /**
  * @description Coerces an unknown value to one of the recognised
- * {@link ClawdstrikeMode} literals (`"off"`, `"audit"`, `"enforce"`, `"local"`).
+ * {@link ClawsightMode} literals (`"off"`, `"audit"`, `"enforce"`, `"local"`).
  * Returns the default if the value does not match any valid mode.
  * @param value - The raw value to inspect.
  * @param defaultValue - Fallback mode.
- * @returns A valid {@link ClawdstrikeMode}.
+ * @returns A valid {@link ClawsightMode}.
  */
-function asMode(value: unknown, defaultValue: ClawdstrikeMode): ClawdstrikeMode {
+function asMode(value: unknown, defaultValue: ClawsightMode): ClawsightMode {
   const raw = asString(value)?.toLowerCase();
   if (raw === "off" || raw === "audit" || raw === "enforce" || raw === "local") {
     return raw;
@@ -73,13 +73,13 @@ function joinUrl(base: string, path: string): string {
 
 /**
  * @description Transforms a raw configuration object into a fully-resolved
- * {@link ClawdstrikePluginConfig}. Missing or invalid values are replaced with
+ * {@link ClawsightPluginConfig}. Missing or invalid values are replaced with
  * sensible defaults. Numeric values are clamped to their minimum thresholds
  * (e.g. `flushIntervalMs >= 250`, `batchMaxEvents >= 1`).
  * @param raw - Untyped key-value configuration object.
  * @returns A complete, validated plugin configuration.
  */
-export function resolvePluginConfig(raw: Record<string, unknown>): ClawdstrikePluginConfig {
+export function resolvePluginConfig(raw: Record<string, unknown>): ClawsightPluginConfig {
   const enabled = asBoolean(raw.enabled, true);
   const mode = asMode(raw.mode, "audit");
   const platformUrl = asString(raw.platformUrl) ?? "";
@@ -92,7 +92,7 @@ export function resolvePluginConfig(raw: Record<string, unknown>): ClawdstrikePl
   const localRulesPath =
     asString(raw.localRulesPath) ??
     (mode === "local"
-      ? path.join(os.homedir(), ".openclaw", "plugins", "clawdstrike", "rules.json")
+      ? path.join(os.homedir(), ".openclaw", "plugins", "clawsight", "rules.json")
       : undefined);
 
   const ingestPath = asString(raw.ingestPath) ?? "/v1/telemetry/ingest";

@@ -1,21 +1,21 @@
 /**
  * @module service-types
- * @description Core TypeScript type definitions for the ClawdStrike plugin.
+ * @description Core TypeScript type definitions for the ClawSight plugin.
  *
  * Defines the shared contracts used across all modules:
- * - {@link ClawdstrikePluginConfig} — resolved plugin configuration
+ * - {@link ClawsightPluginConfig} — resolved plugin configuration
  * - {@link TelemetryEnvelope} — schema for all telemetry events sent to the SIEM
  * - {@link ToolDecision} / {@link MessageDecision} / {@link IntentDecision} — policy decision types
- * - {@link ClawdstrikeRuntime} — the unified runtime interface produced by all modes
+ * - {@link ClawsightRuntime} — the unified runtime interface produced by all modes
  *
  * These types are the API boundary between the plugin entry (index.ts), the service
  * layer (service.ts), the local policy engine, and the platform client.
  */
 
 /** Operating mode. "off" disables entirely, "audit" logs only, "enforce" blocks, "local" uses on-disk rules. */
-export type ClawdstrikeMode = "off" | "audit" | "enforce" | "local";
+export type ClawsightMode = "off" | "audit" | "enforce" | "local";
 
-export type ClawdstrikeCaptureConfig = {
+export type ClawsightCaptureConfig = {
   messages: boolean;
   messageBody: boolean;
   tools: boolean;
@@ -25,15 +25,15 @@ export type ClawdstrikeCaptureConfig = {
   logs: boolean;
 };
 
-export type ClawdstrikeNetworkConfig = {
+export type ClawsightNetworkConfig = {
   timeoutMs: number;
 };
 
-export type ClawdstrikeTelemetrySeverity = "trace" | "debug" | "info" | "warn" | "error";
+export type ClawsightTelemetrySeverity = "trace" | "debug" | "info" | "warn" | "error";
 
-export type ClawdstrikePluginConfig = {
+export type ClawsightPluginConfig = {
   enabled: boolean;
-  mode: ClawdstrikeMode;
+  mode: ClawsightMode;
   platformUrl: string;
   localRulesPath?: string;
   apiToken?: string;
@@ -46,14 +46,14 @@ export type ClawdstrikePluginConfig = {
   paymentsSendPath: string;
   flushIntervalMs: number;
   batchMaxEvents: number;
-  capture: ClawdstrikeCaptureConfig;
-  network: ClawdstrikeNetworkConfig;
+  capture: ClawsightCaptureConfig;
+  network: ClawsightNetworkConfig;
 };
 
 export type TelemetryEnvelope = {
   eventId: string;
   ts: number;
-  severity: ClawdstrikeTelemetrySeverity;
+  severity: ClawsightTelemetrySeverity;
   category:
     | "agent"
     | "message"
@@ -283,8 +283,8 @@ export type PaymentsSendResponse = {
  * the decision comes from local rules (in-process) or the remote platform (HTTP).
  * In local mode, intent methods return null; in platform mode, they proxy to the SIEM.
  */
-export type ClawdstrikeRuntime = {
-  config: ClawdstrikePluginConfig;
+export type ClawsightRuntime = {
+  config: ClawsightPluginConfig;
   emit: (evt: Omit<TelemetryEnvelope, "eventId" | "ts"> & { eventId?: string; ts?: number }) => void;
   decideToolCall: (req: ToolDecisionRequest) => Promise<ToolDecision | null>;
   decideOutboundMessage: (req: MessageDecisionRequest) => Promise<MessageDecision | null>;
